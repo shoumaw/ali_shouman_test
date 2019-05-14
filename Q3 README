@@ -1,0 +1,18 @@
+Q3 design decisions and missing functionality
+
+For this question I just provided an implementation of the cache to be intergrated to Ormuco stack.
+The LRU cache is implemented using a hashmap & a doubly linked list. Basically the values of the hashmap would point to the nodes of the doubly linked list. the doubly linked list would then hold the values of the cache. the list is implemented in a sense that nodes would be added to the start of the list and removed from the end of the list and whenever any node is accessed , it will be moved to start. so that recently used entries will be at the start and least used will be at the end.
+
+
+I will provide a written explanation on how to tackle some of the non functional requirements included.
+
+2) Resilient to network failures or crashes : A solution would be replicating this cache at each geolocation and using a load balancer to determine which cache to use in case one of them was down or something but we will have to take care of consistency making sure any write is being applied to all of them
+
+3)real time replication: if a cache miss occurs, then the data would be retrieved from the database and the cache and its local replicas would be updated
+
+5) Locality of reference: another hashmap could be used that would map each resource to its corresponding zone cache, so a request coming from a server would use this hashmap to locate the nearest cache to it.
+
+6) for fast concurrency each cache would be divided into shards with locks (would decrease the probability of 2 servers accessing the same shard and if it happens then a lock would provide synchronization)
+
+7) Cache can expire : The nodes have a value of type CachedObject which should implement a isExpired() method, I left it for each type of CachedObject to determine how it should determine if it expired or not. I provided an api for the LRU cache to iterate through its nodes and remove any expired node.
+But I didnt provide a timer that would invoke this function ( lru should create a background thread that would call this function every while and then).
